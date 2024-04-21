@@ -73,14 +73,18 @@ def mean_filter(img, filter_size=3):
 
     padded_img = padding_img(img, filter_size)
 
-    height, width = padded_img.shape
+    height, width = img.shape
 
-    smoothed_img = np.zeros_like(img)
+    smoothed_img = np.zeros(img.shape)
 
-    for i in range(height - filter_size + 1):
-        for j in range(width - filter_size + 1):
-            neighborhhood = padded_img[i:i + filter_size, j:j + filter_size]
-            smoothed_img[i, j] = np.mean(neighborhhood)
+    pad_size = filter_size // 2
+
+    kernel = np.ones((filter_size, filter_size)) / (filter_size ** 2)
+
+    for i in range(pad_size, height + pad_size):
+        for j in range(pad_size, width + pad_size):
+            neighborhhood = padded_img[i - pad_size:i + pad_size + 1, j - pad_size:j + pad_size + 1]
+            smoothed_img[i - pad_size, j - pad_size] = np.sum(np.multiply(kernel, neighborhhood))
 
     return smoothed_img
 
@@ -99,14 +103,16 @@ def median_filter(img, filter_size=3):
 
     padded_img = padding_img(img, filter_size)
 
-    height, width = padded_img.shape
+    height, width = img.shape
 
-    smoothed_img = np.zeros_like(img)
+    smoothed_img = np.zeros(img.shape)
 
-    for i in range(height - filter_size + 1):
-        for j in range(width - filter_size + 1):
-            neighborhhood = padded_img[i:i + filter_size, j:j + filter_size]
-            smoothed_img[i, j] = np.median(neighborhhood)
+    pad_size = filter_size // 2
+
+    for i in range(pad_size, height + pad_size):
+        for j in range(pad_size, width + pad_size):
+            neighborhhood = padded_img[i - pad_size:i + pad_size + 1, j - pad_size:j + pad_size + 1]
+            smoothed_img[i - pad_size, j - pad_size] = np.median(neighborhhood)
 
     return smoothed_img
 
@@ -127,9 +133,9 @@ def psnr(gt_img, smooth_img):
     # calculate mean squared error
     mse = np.mean((gt_img - smooth_img) ** 2)
 
-    max_pixel_value = np.max(gt_img)
+    max_pixel_value = 255
 
-    psnr_score = 10 * np.log10(max_pixel_value ** 2 / mse)
+    psnr_score = 20 * np.log10(max_pixel_value) - 10 * np.log10(mse)
 
     return psnr_score
 
